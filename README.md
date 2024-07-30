@@ -12,4 +12,7 @@ Es un proyecto que utiliza Firebase para subir los pdf y luego poder extraer el 
 y dentro añadir:
 
 - VITE_OPENAI_API_KEY='Vuestra-apiKey-de-OpenAi'
+
+Para iniciar el proyecto simplemente deberas usar: 
+npm run dev
 # pdf-resummer
