@@ -11,5 +11,5 @@ Currently, two official plugins are available:
 Es un proyecto que utiliza Firebase para subir los pdf y luego poder extraer el texto del PDF usando pdfjs-dist para que ChatGPT pueda resumirlo, se esta utilizando mi firebase, con mi ApiKey, no hace falta cambiarlo ya que no importa mucho, pero si quereis probarlo en local si que teneis que crear un archivo .env
 y dentro añadir:
 
-- VITE_OPENAI_API_KEY='<Vuestra-apiKey-de-OpenAi>'
+- VITE_OPENAI_API_KEY='Vuestra-apiKey-de-OpenAi'
 # pdf-resummer
