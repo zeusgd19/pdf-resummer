@@ -80,7 +80,7 @@ export function useFile() {
         try {
             const textoPdf = await extractTextFromPDF(url);
             const openai = createOpenAI({
-                apiKey: import.meta.env.VITE_PERPLEXITY_API_KEY,
+                apiKey: import.meta.env.VITE_OPENAI_API_KEY,
                 compatibility: 'strict'
               });
 
