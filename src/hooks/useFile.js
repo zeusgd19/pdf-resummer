@@ -1,73 +1,102 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "../firebase";
+import { storage } from "../firebase"; // Asegúrate de que este import esté correcto
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
+
+// Configura el workerSrc usando la versión correcta de pdfjs-dist
+pdfjsLib.GlobalWorkerOptions.workerSrc = '../../../node_modules/pdfjs-dist/build/pdf.worker.mjs'
 
 export function useFile() {
     const [url, setUrl] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [generatedText, setGeneratedText] = useState('');
-    const [loading, setLoading] = useState(false); // Nuevo estado de carga
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-      if (!selectedFile) {
-        document.getElementsByTagName('button')[0].setAttribute('disabled', true);
-      } else {
-        document.getElementsByTagName('button')[0].removeAttribute('disabled');
-      }
-    }, [selectedFile]);
-  
+        const button = document.getElementsByTagName('button')[0];
+        if (button) {
+            if (!selectedFile || !url) {
+                button.setAttribute('disabled', true);
+            } else {
+                button.removeAttribute('disabled');
+            }
+        }
+    }, [selectedFile, url]);
+
     const onDrop = useCallback(async (acceptedFiles) => {
         const file = acceptedFiles[0];
         setSelectedFile(file);
         await uploadFile(file);
-      }, []);
-  
+    }, []);
+
     const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
-      onDrop,
-      accept: {
-        'application/pdf': []
-      }
+        onDrop,
+        accept: { 'application/pdf': [] }
     });
 
     const uploadFile = async (file) => {
         const storageRef = ref(storage, `uploads/${file.name}`);
-    
+
         try {
-          await uploadBytes(storageRef, file);
-          const downloadURL = await getDownloadURL(storageRef);
-          setUrl(downloadURL);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+            setUrl(downloadURL);
         } catch (error) {
-          console.error('Error uploading file:', error);
+            console.error('Error uploading file:', error);
         }
-      };
+    };
+
+    const extractTextFromPDF = async (url) => {
+        try {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+    
+            // Carga el PDF
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+            let text = '';
+    
+            // Extrae texto de cada página
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                text += textContent.items.map(item => item.str).join(' ') + '\n';
+            }
+    
+            return text;
+        } catch (error) {
+            console.error('Error extracting text from PDF:', error);
+            return 'Error extracting text from PDF';
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Inicia el estado de carga
-
+        setLoading(true);
+    
         try {
-          const perplexity = createOpenAI({
-            apiKey: import.meta.env.VITE_PERPLEXITY_API_KEY,
-            baseURL: 'https://api.perplexity.ai/',
-          });
+            const textoPdf = await extractTextFromPDF(url);
+            const openai = createOpenAI({
+                apiKey: import.meta.env.VITE_PERPLEXITY_API_KEY,
+                compatibility: 'strict'
+              });
 
-          const model = perplexity('llama-3-sonar-large-32k-online');
+            const model = openai('gpt-4o');
 
-          const { text } = await generateText({
-            model: model,
-            prompt: `Crea un resumen sobre el siguiente PDF, hazlo de la mejor manera: ${url}`
-          });
-
-          setGeneratedText(text);
+            const { text } = await generateText({
+                model: model,
+                prompt: `Hazme un resumen del siguiente texto extraido de un pdf: ${textoPdf}`
+            });
+            setGeneratedText(text)
         } catch (error) {
-          console.error('Error generating text:', error);
+            console.error('Error generating text:', error);
         } finally {
-          setLoading(false); // Termina el estado de carga
+            setLoading(false);
         }
-      };
+    };
 
     return { getRootProps, getInputProps, handleSubmit, acceptedFiles, generatedText, loading };
 }

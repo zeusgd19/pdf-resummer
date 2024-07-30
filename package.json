@@ -12,7 +12,10 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.36",
     "ai": "^3.2.22",
+    "axios": "^1.7.2",
     "firebase": "^10.12.3",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.5.136",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3"
