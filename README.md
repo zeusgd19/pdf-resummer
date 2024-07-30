@@ -22,7 +22,4 @@ y dentro de este archivo **.env** debes escribir lo siguiente:
 - VITE_OPENAI_API_KEY='Vuestra-apiKey-de-OpenAi'
 
 Una vez terminado todo, inicias el proyecto con ***npm run dev***
-
-Para iniciar el proyecto simplemente deberas usar: 
-npm run dev
 # pdf-resummer
