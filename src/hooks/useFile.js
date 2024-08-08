@@ -67,12 +67,6 @@ export function useFile() {
                 const textContent = await page.getTextContent();
                 text += textContent.items.map(item => item.str).join(' ') + '\n';
             }
-    
-            if (storageRef) {
-                await deleteObject(storageRef);
-            } else {
-                console.error('storageRef is null or undefined');
-            }
             return text;
         } catch (error) {
             console.error('Error extracting text from PDF:', error);
