@@ -77,6 +77,7 @@ export function useFile() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        console.log("API Key:", import.meta.env.VITE_OPENAI_API_KEY);
     
         try {
             const textoPdf = await extractTextFromPDF(url);
