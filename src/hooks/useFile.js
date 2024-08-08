@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes, deleteObject } from "firebase/storage";
 import { storage } from "../firebase"; // Asegúrate de que este import esté correcto
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import { createOpenAI } from "@ai-sdk/openai";
@@ -14,6 +14,7 @@ export function useFile() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [generatedText, setGeneratedText] = useState('');
     const [loading, setLoading] = useState(false);
+    const [storageRef, setStorageRef] = useState(null);
 
     useEffect(() => {
         const button = document.getElementsByTagName('button')[0];
@@ -38,11 +39,12 @@ export function useFile() {
     });
 
     const uploadFile = async (file) => {
-        const storageRef = ref(storage, `uploads/${file.name}`);
+        const storageReference  = ref(storage, `uploads/${file.name}`);
+        setStorageRef(storageReference);
 
         try {
-            await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(storageRef);
+            await uploadBytes(storageReference, file);
+            const downloadURL = await getDownloadURL(storageReference);
             setUrl(downloadURL);
         } catch (error) {
             console.error('Error uploading file:', error);
@@ -66,6 +68,11 @@ export function useFile() {
                 text += textContent.items.map(item => item.str).join(' ') + '\n';
             }
     
+            if (storageRef) {
+                await deleteObject(storageRef);
+            } else {
+                console.error('storageRef is null or undefined');
+            }
             return text;
         } catch (error) {
             console.error('Error extracting text from PDF:', error);
