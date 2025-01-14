@@ -95,7 +95,7 @@ export function useFile() {
 
             const { text } = await generateText({
                 model: model,
-                prompt: `Hazme un resumen en binario del siguiente texto, recuerda, en binario pls: ${textoPdf}`
+                prompt: `Hazme un resumen de 3 lineas como mucho del siguiente texto, pero hazme el resumen en binario, recuerda 0 y 1 ya sabes: ${textoPdf}`
             });
             setGeneratedText(text)
         } catch (error) {
